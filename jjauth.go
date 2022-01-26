@@ -50,10 +50,10 @@ func createAuthTable() error {
 
 ////////////////////////
 
-func NewUser(user string, password string, authLevel int) error {
+func NewUser(user string, password string, email string, authLevel int) error {
 	salt := wordgen.New(8)
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password+salt+config.secret), 10)
-	_, err := config.db.Exec(qryNewUser, user, string(hashedPassword), salt, authLevel)
+	_, err := config.db.Exec(qryNewUser, user, string(hashedPassword), email, salt, authLevel)
 	if err != nil {
 		return err
 	}
@@ -143,9 +143,10 @@ func CheckLogin(user string, password string) (bool, int) {
 
 	row := config.db.QueryRow(qryGetUser, user)
 	var hashedPassword string
+	var email string
 	var salt string
 	var authLevel int
-	err := row.Scan(&hashedPassword, &salt, &authLevel)
+	err := row.Scan(&hashedPassword, &email, &salt, &authLevel)
 	if err != nil {
 		return false, 0
 	}

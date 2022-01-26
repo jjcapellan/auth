@@ -1,4 +1,4 @@
-module github/jjcapellan/auth
+module github.com/jjcapellan/auth
 
 go 1.16
 

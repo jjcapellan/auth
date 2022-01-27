@@ -35,7 +35,7 @@ var twoFactorStore map[string]Obj2FA
 
 //////////////////////////////
 
-func Init(database *sql.DB, secretKey string, loginUrl string, mailConf SmtpConfig) error {
+func Init(database *sql.DB, secretKey string, loginUrl string, smtpConf SmtpConfig) error {
 	sessionStore = make(map[string]UserSession)
 	twoFactorStore = make(map[string]Obj2FA)
 
@@ -43,8 +43,8 @@ func Init(database *sql.DB, secretKey string, loginUrl string, mailConf SmtpConf
 	config.secret = secretKey
 	config.loginUrl = loginUrl
 
-	if mailConf.From != "" {
-		InitSmtp(mailConf.From, mailConf.Password, mailConf.Host, mailConf.Port)
+	if smtpConf.from != "" {
+		initSmtp(smtpConf)
 	}
 
 	err := createAuthTable()
@@ -115,8 +115,8 @@ func New2FA(user string, password string, duration int64) bool {
 	twoFactorStore[user] = objTwoFactor
 
 	// Send 2FA password to user email
-	msg := GenMessage("Verification code", pass)
-	err = Send(email, msg)
+	msg := genMessage("Verification code", pass)
+	err = sendMessage(email, msg)
 	if err != nil {
 		return false
 	}

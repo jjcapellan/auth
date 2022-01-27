@@ -41,7 +41,7 @@ func New2FA(user string, password string, duration int64) bool {
 
 	objTwoFactor := Obj2FA{}
 	objTwoFactor.hashPass = hashPass
-	objTwoFactor.exp = time.Now().Unix() + int64(180)
+	objTwoFactor.exp = time.Now().Unix() + int64(duration)
 	twoFactorStore[user] = objTwoFactor
 
 	// Send 2FA password to user email

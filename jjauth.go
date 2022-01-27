@@ -13,8 +13,13 @@ import (
 
 type UserSession struct {
 	userId    string
-	exp       int64
+	exp       int64 // Expire time
 	authLevel int
+}
+
+type Obj2FA struct {
+	hashPass []byte
+	exp      int64 // Expire time
 }
 
 type Config struct {
@@ -26,15 +31,21 @@ type Config struct {
 var config = &Config{}
 
 var sessionStore map[string]UserSession
+var twoFactorStore map[string]Obj2FA
 
 //////////////////////////////
 
-func Init(database *sql.DB, secretKey string, loginUrl string) error {
+func Init(database *sql.DB, secretKey string, loginUrl string, mailConf SmtpConfig) error {
 	sessionStore = make(map[string]UserSession)
+	twoFactorStore = make(map[string]Obj2FA)
 
 	config.db = database
 	config.secret = secretKey
 	config.loginUrl = loginUrl
+
+	if mailConf.From != "" {
+		InitSmtp(mailConf.From, mailConf.Password, mailConf.Host, mailConf.Port)
+	}
 
 	err := createAuthTable()
 	if err != nil {
@@ -71,6 +82,46 @@ func NewSession(user string, duration int, authLevel int, w http.ResponseWriter)
 	sessionStore[token] = objUser
 
 	setSessionCookie(token, w)
+}
+
+////////////////////////
+
+func New2FA(user string, password string, duration int64) bool {
+	// Check user/pass
+
+	isUser, _ := CheckLogin(user, password)
+	if !isUser {
+		return false
+	}
+
+	// Get user email
+
+	row := config.db.QueryRow(qryGetUserEmail, user)
+
+	var email string
+	err := row.Scan(&email)
+	if err != nil {
+		return false
+	}
+
+	// Create temp 2FA password
+	pass := wordgen.NotSymbols(6)
+	hashPass, _ := bcrypt.GenerateFromPassword([]byte(pass), 10)
+
+	// Register new 2FA
+	objTwoFactor := Obj2FA{}
+	objTwoFactor.hashPass = hashPass
+	objTwoFactor.exp = getExpireTime(180)
+	twoFactorStore[user] = objTwoFactor
+
+	// Send 2FA password to user email
+	msg := GenMessage("Verification code", pass)
+	err = Send(email, msg)
+	if err != nil {
+		return false
+	}
+
+	return true
 }
 
 func createToken() string {

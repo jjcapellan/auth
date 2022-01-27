@@ -18,4 +18,6 @@ const qryGetUserSession = "SELECT PK_USER,Session_exp,Auth_level FROM Users WHER
 
 const qryGetUser = "SELECT Password, Email, Salt, Auth_level FROM Users WHERE PK_USER = ?;"
 
+const qryGetUserEmail = "SELECT Email FROM Users WHERE PK_USER = ?;"
+
 const qryDeleteSession = "UPDATE Users SET Session_exp = 0 WHERE PK_USER = ?;"

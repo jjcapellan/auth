@@ -54,3 +54,18 @@ func New2FA(user string, password string, duration int64) bool {
 
 	return true
 }
+
+func Check2FA(user string, pass2FA string) bool {
+
+	exp := twoFactorStore[user].exp
+	if exp < time.Now().Unix() {
+		return false
+	}
+
+	err := bcrypt.CompareHashAndPassword(twoFactorStore[user].hashPass, []byte(pass2FA))
+	if err != nil {
+		return false
+	}
+
+	return true
+}

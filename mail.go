@@ -5,10 +5,10 @@ import (
 )
 
 type SmtpConfig struct {
-	from     string
-	password string
-	host     string
-	port     string
+	From     string
+	Password string
+	Host     string
+	Port     string
 }
 
 type MailConfig struct {
@@ -20,7 +20,7 @@ var mailConfig = &MailConfig{}
 
 func initSmtp(smtpConf SmtpConfig) {
 	mailConfig.SmtpConfig = smtpConf
-	mailConfig.auth = smtp.PlainAuth("", smtpConf.from, smtpConf.password, smtpConf.host)
+	mailConfig.auth = smtp.PlainAuth("", smtpConf.From, smtpConf.Password, smtpConf.Host)
 }
 
 func genMessage(subject string, body string) (msg string) {
@@ -28,7 +28,7 @@ func genMessage(subject string, body string) (msg string) {
 }
 
 func sendMessage(to string, message string) error {
-	msg := "From: " + mailConfig.from + "\r\n" + "To: " + to + "\r\n" + message
-	err := smtp.SendMail(mailConfig.host+":"+mailConfig.port, mailConfig.auth, mailConfig.from, []string{to}, []byte(msg))
+	msg := "From: " + mailConfig.From + "\r\n" + "To: " + to + "\r\n" + message
+	err := smtp.SendMail(mailConfig.Host+":"+mailConfig.Port, mailConfig.auth, mailConfig.From, []string{to}, []byte(msg))
 	return err
 }

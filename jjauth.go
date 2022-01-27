@@ -43,7 +43,7 @@ func Init(database *sql.DB, secretKey string, loginUrl string, smtpConf SmtpConf
 	config.secret = secretKey
 	config.loginUrl = loginUrl
 
-	if smtpConf.from != "" {
+	if smtpConf.From != "" {
 		initSmtp(smtpConf)
 	}
 

@@ -67,5 +67,7 @@ func Check2FA(user string, pass2FA string) bool {
 		return false
 	}
 
+	delete(twoFactorStore, user)
+
 	return true
 }

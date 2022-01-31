@@ -23,6 +23,16 @@ func DeleteUser(user string) error {
 	return nil
 }
 
+func UpdateUserPass(user string, password string) error {
+	salt := wordgen.New(8)
+	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password+salt+config.secret), 10)
+	_, err := config.db.Exec(qryUpdatePass, hashedPassword, salt, user)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func CheckLogin(user string, password string) (bool, int) {
 
 	row := config.db.QueryRow(qryGetUser, user)

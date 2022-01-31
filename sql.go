@@ -23,3 +23,5 @@ const qryGetUserEmail = "SELECT Email FROM Users WHERE PK_USER = ?;"
 const qryDeleteUser = "DELETE FROM Users WHERE PK_USER = ?;"
 
 const qryDeleteSession = "UPDATE Users SET Session_exp = 0 WHERE PK_USER = ?;"
+
+const qryUpdatePass = "UPDATE Users SET Password = ?, Salt = ? WHERE PK_USER = ?;"

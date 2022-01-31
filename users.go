@@ -33,6 +33,14 @@ func UpdateUserPass(user string, password string) error {
 	return nil
 }
 
+func UpdateUserEmail(user string, email string) error {
+	_, err := config.db.Exec(qryUpdateEmail, email, user)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func CheckLogin(user string, password string) (bool, int) {
 
 	row := config.db.QueryRow(qryGetUser, user)

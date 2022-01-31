@@ -15,6 +15,14 @@ func NewUser(user string, password string, email string, authLevel int) error {
 	return nil
 }
 
+func DeleteUser(user string) error {
+	_, err := config.db.Exec(qryDeleteUser, user)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func CheckLogin(user string, password string) (bool, int) {
 
 	row := config.db.QueryRow(qryGetUser, user)

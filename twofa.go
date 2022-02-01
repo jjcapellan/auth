@@ -7,12 +7,12 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type Obj2FA struct {
+type obj2FA struct {
 	hashPass []byte
 	exp      int64 // Expire time
 }
 
-var twoFactorStore map[string]Obj2FA = make(map[string]Obj2FA)
+var twoFactorStore map[string]obj2FA = make(map[string]obj2FA)
 
 // New2FA checks user password and sends a verification code to user email
 //
@@ -27,7 +27,7 @@ func New2FA(user string, password string, duration int64) bool {
 
 	// Get user email
 
-	row := config.db.QueryRow(qryGetUserEmail, user)
+	row := conf.db.QueryRow(qryGetUserEmail, user)
 
 	var email string
 	err := row.Scan(&email)
@@ -42,10 +42,10 @@ func New2FA(user string, password string, duration int64) bool {
 
 	// Register new 2FA
 
-	objTwoFactor := Obj2FA{}
-	objTwoFactor.hashPass = hashPass
-	objTwoFactor.exp = time.Now().Unix() + int64(duration)
-	twoFactorStore[user] = objTwoFactor
+	obj2f := obj2FA{}
+	obj2f.hashPass = hashPass
+	obj2f.exp = time.Now().Unix() + int64(duration)
+	twoFactorStore[user] = obj2f
 
 	// Send 2FA password to user email
 

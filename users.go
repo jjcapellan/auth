@@ -16,8 +16,8 @@ import (
 // authLevel: this number should be used to filter user access privileges.
 func NewUser(user string, password string, email string, authLevel int) error {
 	salt := wordgen.New(8)
-	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password+salt+config.secret), 10)
-	_, err := config.db.Exec(qryNewUser, user, string(hashedPassword), email, salt, authLevel)
+	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password+salt+conf.secret), 10)
+	_, err := conf.db.Exec(qryNewUser, user, string(hashedPassword), email, salt, authLevel)
 	if err != nil {
 		return err
 	}
@@ -25,7 +25,7 @@ func NewUser(user string, password string, email string, authLevel int) error {
 }
 
 func DeleteUser(user string) error {
-	_, err := config.db.Exec(qryDeleteUser, user)
+	_, err := conf.db.Exec(qryDeleteUser, user)
 	if err != nil {
 		return err
 	}
@@ -34,8 +34,8 @@ func DeleteUser(user string) error {
 
 func UpdateUserPass(user string, password string) error {
 	salt := wordgen.New(8)
-	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password+salt+config.secret), 10)
-	_, err := config.db.Exec(qryUpdatePass, hashedPassword, salt, user)
+	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password+salt+conf.secret), 10)
+	_, err := conf.db.Exec(qryUpdatePass, hashedPassword, salt, user)
 	if err != nil {
 		return err
 	}
@@ -43,7 +43,7 @@ func UpdateUserPass(user string, password string) error {
 }
 
 func UpdateUserEmail(user string, email string) error {
-	_, err := config.db.Exec(qryUpdateEmail, email, user)
+	_, err := conf.db.Exec(qryUpdateEmail, email, user)
 	if err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func UpdateUserEmail(user string, email string) error {
 // Returns (true, authLevel) if login is successful, else returns (false, 0).
 func CheckLogin(user string, password string) (bool, int) {
 
-	row := config.db.QueryRow(qryGetUser, user)
+	row := conf.db.QueryRow(qryGetUser, user)
 	var hashedPassword string
 	var email string
 	var salt string
@@ -68,7 +68,7 @@ func CheckLogin(user string, password string) (bool, int) {
 }
 
 func checkPass(password string, hashedPassword string, salt string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password+salt+config.secret))
+	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password+salt+conf.secret))
 	if err != nil {
 		return false
 	}
@@ -76,6 +76,6 @@ func checkPass(password string, hashedPassword string, salt string) bool {
 }
 
 func initAuthTable() error {
-	_, err := config.db.Exec(qryCreateTable)
+	_, err := conf.db.Exec(qryCreateTable)
 	return err
 }

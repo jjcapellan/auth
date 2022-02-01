@@ -24,6 +24,7 @@ func CheckAuthCookie(r *http.Request) bool {
 	return false
 }
 
+// LogOut deletes current session and user cookie
 func LogOut(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("JJCSESID")
 	if err != nil {

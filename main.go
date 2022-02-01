@@ -13,7 +13,14 @@ type Config struct {
 var config = &Config{}
 
 // Init initializes all necesary objects to use this package funcions
-// smtpConf can be an empty struct, in that case smtp server won't be initialized
+//
+// database: here a table "Users" is stored
+//
+// secretKey: Random word used for cryptographic purposes
+//
+// loginUrl: url of the login page
+//
+// smtpConf: can be an empty struct, in that case smtp server won't be initialized
 func Init(database *sql.DB, secretKey string, loginUrl string, smtpConf SmtpConfig) error {
 
 	config.db = database

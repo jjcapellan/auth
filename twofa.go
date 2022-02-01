@@ -14,6 +14,9 @@ type Obj2FA struct {
 
 var twoFactorStore map[string]Obj2FA = make(map[string]Obj2FA)
 
+// New2FA checks user password and sends a verification code to user email
+//
+// The verification code is valid for [duration] seconds and is deleted after use.
 func New2FA(user string, password string, duration int64) bool {
 	// Check user/pass
 
@@ -55,6 +58,9 @@ func New2FA(user string, password string, duration int64) bool {
 	return true
 }
 
+// Check2FA checks the verification code (pass2FA)
+//
+// Returns true if pass2FA is valid.
 func Check2FA(user string, pass2FA string) bool {
 
 	exp := twoFactorStore[user].exp

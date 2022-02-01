@@ -5,6 +5,15 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// NewUser saves a new user in the database
+//
+// user: name of the user. Must be unique.
+//
+// password: will be used for future logins. The password is hashed before save it.
+//
+// email: can be an empty stryng (""). Is used for two factor validation.
+//
+// authLevel: this number should be used to filter user access privileges.
 func NewUser(user string, password string, email string, authLevel int) error {
 	salt := wordgen.New(8)
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password+salt+config.secret), 10)
@@ -41,6 +50,9 @@ func UpdateUserEmail(user string, email string) error {
 	return nil
 }
 
+// CheckLogin checks user password
+//
+// Returns (true, authLevel) if login is successful, else returns (false, 0).
 func CheckLogin(user string, password string) (bool, int) {
 
 	row := config.db.QueryRow(qryGetUser, user)

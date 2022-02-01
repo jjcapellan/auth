@@ -18,8 +18,10 @@ type UserSession struct {
 var sessionStore map[string]UserSession = make(map[string]UserSession)
 
 // NewSession creates and saves in users database and sessionStore a new session.
+//
 // Session expires in [duration] seconds.
-// authLevel could be used to filter user access privileges
+//
+// authLevel should be used to filter user access privileges.
 func NewSession(user string, duration int, authLevel int, w http.ResponseWriter) {
 	token := createToken()
 	expireTime := time.Now().Unix() + int64(duration)

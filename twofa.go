@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/jjcapellan/wordgen"
@@ -16,13 +17,15 @@ var twoFactorStore map[string]obj2FA = make(map[string]obj2FA)
 
 // New2FA checks user password and sends a verification code to user email
 //
-// The verification code is valid for [duration] seconds and is deleted after use.
-func New2FA(user string, password string, duration int64) bool {
+// The verification code is valid for [duration] seconds and is deleted after use
+//
+// Returns an error if verification code is not sent
+func New2FA(user string, password string, duration int64) error {
 	// Check user/pass
 
 	isUser, _ := CheckLogin(user, password)
 	if !isUser {
-		return false
+		return fmt.Errorf("Verification code not sent to user %s: invalid user", user)
 	}
 
 	// Get user email
@@ -32,7 +35,7 @@ func New2FA(user string, password string, duration int64) bool {
 	var email string
 	err := row.Scan(&email)
 	if err != nil {
-		return false
+		return fmt.Errorf("Verification code not sent: %s", err.Error())
 	}
 
 	// Create temp 2FA password
@@ -52,10 +55,10 @@ func New2FA(user string, password string, duration int64) bool {
 	msg := genMessage("Verification code", pass)
 	err = sendMessage(email, msg)
 	if err != nil {
-		return false
+		return fmt.Errorf("Verification code not sent: %s", err.Error())
 	}
 
-	return true
+	return nil
 }
 
 // Check2FA checks the verification code (pass2FA)

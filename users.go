@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"fmt"
+
 	"github.com/jjcapellan/wordgen"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -19,7 +21,7 @@ func NewUser(user string, password string, email string, authLevel int) error {
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password+salt+conf.secret), 10)
 	_, err := conf.db.Exec(qryNewUser, user, string(hashedPassword), email, salt, authLevel)
 	if err != nil {
-		return err
+		return fmt.Errorf("User %s not saved in database: %s", user, err.Error())
 	}
 	return nil
 }
@@ -27,7 +29,7 @@ func NewUser(user string, password string, email string, authLevel int) error {
 func DeleteUser(user string) error {
 	_, err := conf.db.Exec(qryDeleteUser, user)
 	if err != nil {
-		return err
+		return fmt.Errorf("User %s couldnt be deleted from database: %s", user, err.Error())
 	}
 	return nil
 }
@@ -37,7 +39,7 @@ func UpdateUserPass(user string, password string) error {
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password+salt+conf.secret), 10)
 	_, err := conf.db.Exec(qryUpdatePass, hashedPassword, salt, user)
 	if err != nil {
-		return err
+		return fmt.Errorf("%s password couldnt be updated from database: %s", user, err.Error())
 	}
 	return nil
 }
@@ -45,7 +47,7 @@ func UpdateUserPass(user string, password string) error {
 func UpdateUserEmail(user string, email string) error {
 	_, err := conf.db.Exec(qryUpdateEmail, email, user)
 	if err != nil {
-		return err
+		return fmt.Errorf("%s email couldnt be updated from database: %s", user, err.Error())
 	}
 	return nil
 }

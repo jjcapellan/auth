@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -22,15 +23,20 @@ var sessionStore map[string]userSession = make(map[string]userSession)
 // Session expires in [duration] seconds.
 //
 // authLevel should be used to filter user access privileges.
-func NewSession(user string, duration int, authLevel int, w http.ResponseWriter) {
+func NewSession(user string, duration int, authLevel int, w http.ResponseWriter) error {
 	token := createToken()
 	expireTime := time.Now().Unix() + int64(duration)
-	registerNewSession(user, token, expireTime)
+	err := registerNewSession(user, token, expireTime)
+	if err != nil {
+		return err
+	}
 
 	objUser := userSession{user, expireTime, authLevel}
 	sessionStore[token] = objUser
 
 	setSessionCookie(token, w)
+
+	return nil
 }
 
 func createToken() string {
@@ -39,11 +45,14 @@ func createToken() string {
 	return randomPart + timePart
 }
 
-func registerNewSession(user string, token string, expireTime int64) {
+func registerNewSession(user string, token string, expireTime int64) error {
 	_, err := conf.db.Exec(qryNewSession, token, expireTime, user)
 	if err != nil {
 		log.Printf("auth token not registered in database: %s", err)
+		customErr := fmt.Errorf("%s session token could not be registered in database: %s", user, err.Error())
+		return customErr
 	}
+	return nil
 }
 
 func checkExpTime(session userSession) bool {
@@ -57,18 +66,21 @@ func getUserSession(sessionId string) (userSession, error) {
 	var authLevel int
 	err := row.Scan(&userId, &exp, &authLevel)
 	if err != nil {
-		return userSession{}, err
+		customErr := fmt.Errorf("Sesion Id not found in database: %s", err.Error())
+		return userSession{}, customErr
 	}
 	return userSession{userId, exp, authLevel}, nil
 }
 
-func deleteSession(token string) {
+func deleteSession(token string) error {
 	session := sessionStore[token]
 	user := session.userId
 
 	delete(sessionStore, token)
 	_, err := conf.db.Exec(qryDeleteSession, user)
 	if err != nil {
-		log.Printf("delete session database error: %s", err)
+		customErr := fmt.Errorf("Sessioncold not be deleted from database: %s", err.Error())
+		return customErr
 	}
+	return nil
 }

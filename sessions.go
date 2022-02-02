@@ -39,6 +39,14 @@ func NewSession(user string, duration int, authLevel int, w http.ResponseWriter)
 	return nil
 }
 
+func GetUserAuthLevel(token string) int {
+	session, ok := sessionStore[token]
+	if !ok {
+		return 0
+	}
+	return session.authLevel
+}
+
 func createToken() string {
 	randomPart := wordgen.NotSymbols(10)
 	timePart := strconv.FormatInt(time.Now().UnixNano(), 10)

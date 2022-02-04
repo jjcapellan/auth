@@ -137,8 +137,11 @@ func verifyHandler(w http.ResponseWriter, r *http.Request) {
 ```
 
 ### *5. Users authorization*
-This library provides a default authorization middleware (**Middleware**) that redirects unauthorized users to the login page.  
-This middleware must be used for protected routes.  
+This library provides a helper function **GetAuthMiddleware** to get a default middleware to be used in router.
+**func GetAuthMiddleware(authLevel int) func(http.Handler) http.Handler**
+* *authLevel*: minimum authorization level to access protected route.  
+Returned middleware redirects the user to login url if auth cookie is not valid, or sends status unauthorized (401) if user auth level is lower than required.  
+
 Example:
 ```golang
 // using gorilla/mux as router...
@@ -146,13 +149,21 @@ Example:
 router := mux.NewRouter().StrictSlash(true)
 fs := http.FileServer(http.Dir("./public"))
 
+// "/members/..." and "/premium/..." routes only allow authenticated users
+
 membersRouter := router.PathPrefix("/members").Subrouter()
-membersRouter.Use(jjauth.Middleware)
+membersRouter.Use(jjauth.GetAuthMiddleware(1)) // Auth level 1 required to enter in members area
 membersRouter.Handle("/", fs)
+
+premiumRouter := router.PathPrefix("/premium").Subrouter()
+premiumRouter.Use(jjauth.GetAuthMiddleware(2)) // Auth level 2 required to enter in premium area
+premiumRouter.Handle("/", fs)
+
+router.PathPrefix("/").Handler(fs) // 
 
 // ...more code
 ```
-Or you can write your custom middleware using the function **CheckAuthCookie**:  
+Instead use helper function **GetAuthMiddleware** you could make your custom middleware using the function **CheckAuthCookie**:  
 
 **CheckAuthCookie(r \*http.Request) error**  
 Returns error if user auth cookie is not valid (not exist, expired, ...)  
@@ -163,6 +174,12 @@ func customMiddleware(next http.Handler) http.Handler {
 		if err := jjauth.CheckAuthCookie(r); err != nil {
 			log.Println("Bad auth cookie")
 			http.Redirect(w, r, "/login.html", http.StatusSeeOther) // conf is a private object
+			return
+		}
+		cookie, _ := r.Cookie("JJCSESID")
+		if authLevel := GetUserAuthLevel(cookie.Value); authLevel < 2 {
+			w.WriteHeader(http.StatusUnauthorized)
+			w.Write([]byte("Insufficient authorization level"))
 			return
 		}
 		next.ServeHTTP(w, r)

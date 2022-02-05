@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"log"
 	"net/http"
 )
 
@@ -13,8 +12,8 @@ func GetAuthMiddleware(authLevel int) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if err := CheckAuthCookie(r); err != nil {
-				log.Println("Bad auth cookie")
-				http.Redirect(w, r, conf.loginUrl, http.StatusSeeOther)
+				w.WriteHeader(http.StatusForbidden)
+				w.Write([]byte("Forbidden: Not valid or expired credentials"))
 				return
 			}
 

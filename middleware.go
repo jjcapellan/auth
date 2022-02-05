@@ -12,7 +12,7 @@ func GetAuthMiddleware(authLevel int, redirectURL string) func(http.Handler) htt
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if err := CheckAuthCookie(r); err != nil {
-				w.WriteHeader(http.StatusUnauthorized)
+				w.WriteHeader(http.StatusForbidden)
 				w.Write([]byte("Forbidden: Not valid or expired credentials"))
 				return
 			}
@@ -20,7 +20,7 @@ func GetAuthMiddleware(authLevel int, redirectURL string) func(http.Handler) htt
 			cookie, _ := r.Cookie("JJCSESID")
 			if authValue := GetUserAuthLevel(cookie.Value); authValue < authLevel {
 				w.WriteHeader(http.StatusForbidden)
-				w.Write([]byte("Insufficient authorization level"))
+				w.Write([]byte("Forbidden: Insufficient authorization level"))
 				return
 			}
 			next.ServeHTTP(w, r)

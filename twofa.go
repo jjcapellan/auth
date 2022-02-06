@@ -2,6 +2,7 @@ package auth
 
 import (
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/jjcapellan/wordgen"
@@ -14,6 +15,8 @@ type obj2FA struct {
 }
 
 var twoFactorStore map[string]obj2FA = make(map[string]obj2FA)
+
+var mtx2FStore *sync.Mutex = &sync.Mutex{}
 
 // New2FA checks user password and sends a verification code to user email
 //
@@ -48,7 +51,10 @@ func New2FA(user string, password string, duration int64) error {
 	obj2f := obj2FA{}
 	obj2f.hashPass = hashPass
 	obj2f.exp = time.Now().Unix() + int64(duration)
+
+	mtx2FStore.Lock()
 	twoFactorStore[user] = obj2f
+	mtx2FStore.Unlock()
 
 	// Send 2FA password to user email
 
@@ -65,6 +71,9 @@ func New2FA(user string, password string, duration int64) error {
 //
 // Returns true if pass2FA is valid.
 func Check2FA(user string, pass2FA string) bool {
+
+	defer mtx2FStore.Unlock()
+	mtx2FStore.Lock()
 
 	exp := twoFactorStore[user].exp
 	if exp < time.Now().Unix() {

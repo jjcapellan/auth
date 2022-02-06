@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/jjcapellan/wordgen"
@@ -17,6 +18,8 @@ type userSession struct {
 }
 
 var sessionStore map[string]userSession = make(map[string]userSession)
+
+var mtxSessionStore *sync.Mutex = &sync.Mutex{}
 
 // NewSession creates and saves in users database and sessionStore a new session.
 //
@@ -32,7 +35,10 @@ func NewSession(user string, duration int, authLevel int, w http.ResponseWriter)
 	}
 
 	objUser := userSession{user, expireTime, authLevel}
+
+	mtxSessionStore.Lock()
 	sessionStore[token] = objUser
+	mtxSessionStore.Unlock()
 
 	setSessionCookie(token, w)
 
@@ -40,6 +46,9 @@ func NewSession(user string, duration int, authLevel int, w http.ResponseWriter)
 }
 
 func GetUserAuthLevel(token string) int {
+	defer mtxSessionStore.Unlock()
+	mtxSessionStore.Lock()
+
 	session, ok := sessionStore[token]
 	if !ok {
 		return 0
@@ -81,10 +90,12 @@ func getUserSession(sessionId string) (userSession, error) {
 }
 
 func deleteSession(token string) error {
+	mtxSessionStore.Lock()
 	session := sessionStore[token]
 	user := session.userId
-
 	delete(sessionStore, token)
+	mtxSessionStore.Unlock()
+
 	_, err := conf.db.Exec(qryDeleteSession, user)
 	if err != nil {
 		customErr := fmt.Errorf("Sessioncold not be deleted from database: %s", err.Error())

@@ -13,12 +13,15 @@ func CheckAuthCookie(r *http.Request) error {
 		return err
 	}
 
+	mtxSessionStore.Lock()
 	if session, ok := sessionStore[cookie.Value]; ok {
 		if !checkExpTime((session)) {
+			mtxSessionStore.Unlock()
 			err = fmt.Errorf("Check cookie: expired cookie")
 			return err
 		}
 	}
+	mtxSessionStore.Unlock()
 
 	if dbSession, err := getUserSession(cookie.Value); err == nil {
 		if !checkExpTime(dbSession) {

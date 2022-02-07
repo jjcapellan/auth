@@ -2,9 +2,12 @@
 ![GitHub license](https://img.shields.io/github/license/jjcapellan/auth.svg)  
 
 # JJ-AUTH
-Simple and minimal library to implement basic or two factor authentication and authorization system based on session cookies in golang.
+Simple and minimal library to implement basic or two factor authentication and authorization system based on session cookies in golang.  
+
 
 ## Usage
+---  
+
 ### **1. Installation**
 Use this command to download and install in your system:
 ```
@@ -15,6 +18,8 @@ And import it to your code whith:
 ```golang
 import jjauth github.com/jjcapellan/auth
 ```
+---  
+
 ### **2. Initialization**
 Before executing any library function, you must initialize it with this function:  
 
@@ -51,6 +56,8 @@ func main(){
 }
 
 ```
+---  
+
 ### **3. User registration**
 New users profiles are created in "Users" table using this function:  
 **NewUser(user string, password string, authLevel int, email string) error**
@@ -71,6 +78,7 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 	// ... more code
 }
 ```
+---  
 
 ### **4.1 Users simple login**
 Simple login is managed using two functions (**CheckLogin** and **NewSession**):  
@@ -99,6 +107,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 * *duration*: time in seconds until the current session expires.
 * *authLevel*
 * *w*: used to set the session auth cookie. 
+---  
 
 ### **4.2 Two factor authentication (2FA)**
 2FA adds an email verification code to the basic login. 2FA is managed using two functions:  
@@ -137,6 +146,7 @@ func verifyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 ```
+---  
 
 ### **5. Users authorization**
 This library provides a helper function **GetAuthMiddleware** to get a default middleware to be used in router.
@@ -194,6 +204,8 @@ func customMiddleware(next http.Handler) http.Handler {
 	})
 }
 ```
+---  
+
 ### **6. Users logout**
 The logout is performed by the function **LogOut**:  
 

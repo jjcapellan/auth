@@ -15,10 +15,9 @@ import jjauth github.com/jjcapellan/auth
 ### **2. Initialization**
 Before executing any library function, you must initialize it with this function:  
 
-**Init(database \*sql.DB, secret string, loginURL string, smtpConfig SmtpConfig) error**
+**Init(database \*sql.DB, secret string, smtpConfig SmtpConfig) error**
 * *database*: here a table "Users" will be created if not exists.
 * *secret*: random word used for cryptographic purposes. This param should be hidden in environment variable.
-* *loginURL*: url of the login page (ex: "/login.html"). This url will be used by default auth middleware to redirect unathorized users.
 * *smtpConfig*: can be an empty struct, in that case smtp server won't be initialized. If you want to use two factor authentication, you must provide a valid SmtpConfig struct.  
 
 Example:
@@ -41,7 +40,7 @@ func main(){
 	}
 
 	// Auth module initialization
-	err = jjauth.Init(db, "mysecret", "/login.html", smtpConfig)
+	err = jjauth.Init(db, "mysecret", smtpConfig)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -136,11 +135,13 @@ func verifyHandler(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-### *5. Users authorization*
+### **5. Users authorization**
 This library provides a helper function **GetAuthMiddleware** to get a default middleware to be used in router.
-**func GetAuthMiddleware(authLevel int) func(http.Handler) http.Handler**
-* *authLevel*: minimum authorization level to access protected route.  
-Returned middleware redirects the user to login url if auth cookie is not valid, or sends status unauthorized (401) if user auth level is lower than required.  
+**func GetAuthMiddleware(authLevel int, notLoggedURL string, forbiddenURL string) func(http.Handler) http.Handler**
+* *authLevel*: minimum authorization level to access protected route.
+* *notLoggedURL*: redirection url in case user is not logged or expired session (Ex: "/login.html"). If not defined ("") then simply returns a 403 code.
+* *forbiddenURL*: redirection url in case user auth level is lower than required. If not defined ("") then simply returns a 403 code.  
+
 
 Example:
 ```golang
@@ -152,21 +153,25 @@ fs := http.FileServer(http.Dir("./public"))
 // "/members/..." and "/premium/..." routes only allow authenticated users
 
 membersRouter := router.PathPrefix("/members").Subrouter()
-membersRouter.Use(jjauth.GetAuthMiddleware(1)) // Auth level 1 required to enter in members area
+membersRouter.Use(jjauth.GetAuthMiddleware(1, "/login.html", "")) // Auth level 1 required to enter in members area
 membersRouter.Handle("/", fs)
 
 premiumRouter := router.PathPrefix("/premium").Subrouter()
-premiumRouter.Use(jjauth.GetAuthMiddleware(2)) // Auth level 2 required to enter in premium area
+premiumRouter.Use(jjauth.GetAuthMiddleware(2, "/login.html", "")) // Auth level 2 required to enter in premium area
 premiumRouter.Handle("/", fs)
 
 router.PathPrefix("/").Handler(fs) // 
 
 // ...more code
 ```
-Instead use helper function **GetAuthMiddleware** you could make your custom middleware using the function **CheckAuthCookie**:  
+Instead use helper function **GetAuthMiddleware** you could make your custom middleware using the function **CheckAuthCookie** and **GetUserAuthLevel**:  
 
 **CheckAuthCookie(r \*http.Request) error**  
 Returns error if user auth cookie is not valid (not exist, expired, ...)  
+
+**GetUserAuthLevel(token string) int**  
+Returns 0 if session not exist. The token is stored in user cookie ("JJCSESID").  
+
 Example:
 ```golang
 func customMiddleware(next http.Handler) http.Handler {

@@ -2,6 +2,7 @@ package auth
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/jjcapellan/wordgen"
 	"golang.org/x/crypto/bcrypt"
@@ -67,6 +68,12 @@ func CheckLogin(user string, password string) (bool, int) {
 		return false, 0
 	}
 	return checkPass(password, hashedPassword, salt), authLevel
+}
+
+func CheckLoginDelayed(user string, password string, delay int) (bool, int) {
+	time.Sleep(time.Duration(delay) * time.Second)
+	passed, authLevel := CheckLogin(user, password)
+	return passed, authLevel
 }
 
 func checkPass(password string, hashedPassword string, salt string) bool {

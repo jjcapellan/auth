@@ -5,12 +5,14 @@ import (
 )
 
 type config struct {
-	db         *sql.DB
-	secret     string
-	maxAttemps int
+	db          *sql.DB
+	secret      string
+	maxAttemps  int   // login attems before ban specific combination user/IP
+	banDuration int64 // ban duration in seconds
 }
 
 const maxAttemps = 5
+const banDuration = int64(60 * 15) // 15 minutes
 
 var conf = &config{}
 
@@ -26,6 +28,7 @@ func Init(database *sql.DB, secretKey string, smtpConf SmtpConfig) error {
 	conf.db = database
 	conf.secret = secretKey
 	conf.maxAttemps = maxAttemps
+	conf.banDuration = banDuration
 
 	if smtpConf.From != "" {
 		initSmtp(smtpConf)

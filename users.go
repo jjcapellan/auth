@@ -104,12 +104,12 @@ func addFailedLogin(user string, remoteAddress string) {
 	key := user + strings.Split(remoteAddress, ":")[0]
 	userIpRegister, ok := failedLoginStore[key]
 	if !ok {
-		failedLoginStore[key] = loginAttemps{1, time.Now().Unix() + int64(60*30)}
+		failedLoginStore[key] = loginAttemps{1, time.Now().Unix() + conf.banDuration}
 		return
 	}
 
 	attemps := userIpRegister.attemps
-	expireTime := time.Now().Unix() + int64(60*30)
+	expireTime := time.Now().Unix() + conf.banDuration
 	if attemps < conf.maxAttemps {
 		expireTime = 0
 	}

@@ -4,6 +4,18 @@
 # JJ-AUTH
 Simple and minimal library to implement basic or two factor authentication and authorization system based on session cookies in golang.  
 
+## Table of contents
+* [Usage](#Usage)
+  * [1 Installation](#1.-Installation)
+  * [2 Initialization](#2.-Initialization)
+  * [3 User registration](#3.-User-registration)
+  * [4.1 Users simple login](#4.1-Users-simple-login)
+  * [4.2 Two factor authentication](#4.2-Two-factor-authentication-(2FA))
+  * [5 Users authorization](#5.-Users-authorization)
+  * [6 Users logout](#6.-Users-logout)
+  * [7 Delayed login](#7.-Delayed-login)
+  * [8 Ban temporally excessive login attemps](#8.-Ban-temporally-excessive-login-attemps)
+
 
 ## Usage
 ---  
@@ -229,3 +241,47 @@ When two factor authentication is not used, delay the login some seconds can hel
 * *password*: plain text password provided by user.
 * *delay*: delay in seconds before return response.  
 Returns (true, authLevel) if login is successful, else returns (false, 0).  
+
+### **8. Ban temporally excessive login attemps**
+There is a registry where the login attempts are stored.  
+In each registry entry is stored: user, ip, number of attempts, and a time stamp (if the user-ip is baned).  
+To register the login attemps this function is used:  
+
+**RegBadLogin(user string, remoteAddress string)**  
+
+Registers failed logins. If the combination user-ip exceeds the maximum number of attempts allowed (5 by default) then saves a time stamp indicating how long the ban will last (15 minutes by default).
+* *user*: user name.
+* *remoteAddress*: obtained from request using http.Request.RemoteAddr  
+
+This function checks if a user-ip is blocked:  
+**IsBlocked(user string, remoteAddress string) bool**  
+* Returns true if is blocked.  
+
+Example:  
+```golang
+func loginHandler(w http.ResponseWriter, r *http.Request) {
+	user := r.FormValue("user")
+	pass := r.FormValue("pass")
+	
+	// Before check the login, verify if user-ip is baned
+	if jjauth.IsBlocked(user, r.RemoteAddr) {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		log.Println("User temporally baned for excessive login attemps")
+	}
+
+	if ok, _ := jjauth.CheckLogin(user, pass); ok {
+		jjauth.NewSession(user, 60*60, 1, w)
+		http.Redirect(w, r, "/membersarea/", http.StatusSeeOther)
+	} else {
+
+		// Registers the failed login
+		jjauth.RegBadLogin(user, r.RemoteAddr)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		log.Println("Bad login")
+	}
+}
+```  
+The default values for ban duration and max number of attemps can be changed using this functions:  
+* **SetBanDuration(minutes int)**
+* **SetMaxAttemps(attemps int)**
+

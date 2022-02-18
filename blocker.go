@@ -16,12 +16,16 @@ var badLoginStore map[string]userLogins = make(map[string]userLogins)
 
 var mtxBadLoginStore *sync.Mutex = &sync.Mutex{}
 
+var badLoginCount int64 = 0
+
 // RegBadLogin registers the failed login attemp.
 // This function allows, together with "IsBlocked", to block during certain period of time (default 15 mins.)
 // those user-ip combinations that have exceeded a certain number of attempts (default 5).
 //
 // remoteAddress is obtained from request -> http.Request.RemoteAddr
 func RegBadLogin(user string, remoteAddress string) {
+	badLoginCount++
+
 	ip, _, _ := net.SplitHostPort(remoteAddress)
 	key := user + ip
 
@@ -30,6 +34,10 @@ func RegBadLogin(user string, remoteAddress string) {
 	if !ok {
 		badLoginStore[key] = userLogins{1, 0}
 		mtxBadLoginStore.Unlock()
+		if badLoginCount > 100 {
+			badLoginCount = 0
+			go cleanBadLoginStore()
+		}
 		return
 	}
 
@@ -69,4 +77,15 @@ func IsBlocked(user string, remoteAddress string) bool {
 	}
 
 	return true
+}
+
+func cleanBadLoginStore() {
+	t := time.Now().Unix()
+	mtxBadLoginStore.Lock()
+	for k, v := range badLoginStore {
+		if v.exp < t && v.exp > 0 {
+			delete(badLoginStore, k)
+		}
+	}
+	mtxBadLoginStore.Unlock()
 }

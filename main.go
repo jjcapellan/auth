@@ -37,3 +37,10 @@ func Init(database *sql.DB, secretKey string, smtpConf SmtpConfig) error {
 	}
 	return nil
 }
+
+func SetMaxAttemps(attemps int) {
+	if attemps < 1 {
+		return
+	}
+	conf.maxAttemps = attemps
+}

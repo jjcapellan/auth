@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"strings"
+	"net"
 	"sync"
 	"time"
 )
@@ -17,10 +17,14 @@ var badLoginStore map[string]userLogins = make(map[string]userLogins)
 var mtxBadLoginStore *sync.Mutex = &sync.Mutex{}
 
 func RegBadLogin(user string, ip string) {
-	key := user + strings.Split(ip, ":")[0]
+	_ip, _, _ := net.SplitHostPort(ip)
+	key := user + _ip
+
+	mtxBadLoginStore.Lock()
 	obj, ok := badLoginStore[key]
 	if !ok {
-		badLoginStore[key] = userLogins{1, time.Now().Unix() + conf.banDuration}
+		badLoginStore[key] = userLogins{1, 0}
+		mtxBadLoginStore.Unlock()
 		return
 	}
 
@@ -31,20 +35,26 @@ func RegBadLogin(user string, ip string) {
 	}
 	attemps++
 	badLoginStore[key] = userLogins{attemps, expireTime}
+	mtxBadLoginStore.Unlock()
 }
 
 func IsBlocked(user string, ip string) bool {
-	key := user + strings.Split(ip, ":")[0]
+	_ip, _, _ := net.SplitHostPort(ip)
+	key := user + _ip
 
+	mtxBadLoginStore.Lock()
 	obj, ok := badLoginStore[key]
+	mtxBadLoginStore.Unlock()
 	if !ok {
 		return false
 	}
 
 	if obj.exp < time.Now().Unix() {
-		mtxBadLoginStore.Lock()
-		delete(badLoginStore, key)
-		mtxBadLoginStore.Unlock()
+		if obj.attemps >= conf.maxAttemps {
+			mtxBadLoginStore.Lock()
+			delete(badLoginStore, key)
+			mtxBadLoginStore.Unlock()
+		}
 		return false
 	}
 

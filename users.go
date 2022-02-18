@@ -100,8 +100,8 @@ func checkPass(password string, hashedPassword string, salt string) bool {
 	return true
 }
 
-func addFailedLogin(user string, remoteAddress string) {
-	key := user + strings.Split(remoteAddress, ":")[0]
+func RegBadLogin(user string, ip string) {
+	key := user + strings.Split(ip, ":")[0]
 	userIpRegister, ok := failedLoginStore[key]
 	if !ok {
 		failedLoginStore[key] = loginAttemps{1, time.Now().Unix() + conf.banDuration}

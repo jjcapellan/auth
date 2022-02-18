@@ -100,6 +100,23 @@ func checkPass(password string, hashedPassword string, salt string) bool {
 	return true
 }
 
+func addFailedLogin(user string, remoteAddress string) {
+	key := user + strings.Split(remoteAddress, ":")[0]
+	userIpRegister, ok := failedLoginStore[key]
+	if !ok {
+		failedLoginStore[key] = loginAttemps{1, time.Now().Unix() + int64(60*30)}
+		return
+	}
+
+	attemps := userIpRegister.attemps
+	expireTime := time.Now().Unix() + int64(60*30)
+	if attemps < 5 {
+		expireTime = 0
+	}
+	attemps++
+	failedLoginStore[key] = loginAttemps{attemps, expireTime}
+}
+
 func initAuthTable() error {
 	_, err := conf.db.Exec(qryCreateTable)
 	return err

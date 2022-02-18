@@ -41,6 +41,10 @@ func Init(database *sql.DB, secretKey string, smtpConf SmtpConfig) error {
 	return nil
 }
 
+func SetBanDuration(minutes int) {
+	conf.banDuration = int64(minutes * 60)
+}
+
 func SetMaxAttemps(attemps int) {
 	if attemps < 1 {
 		return

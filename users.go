@@ -2,11 +2,23 @@ package auth
 
 import (
 	"fmt"
+	"strings"
+	"sync"
 	"time"
 
 	"github.com/jjcapellan/wordgen"
 	"golang.org/x/crypto/bcrypt"
 )
+
+type loginAttemps struct {
+	attemps int   // Number of failed attemps
+	exp     int64 // Banned expire time
+}
+
+// Stores failed logings: map[user+IP]loginAttemps
+var failedLoginStore map[string]loginAttemps = make(map[string]loginAttemps)
+
+var mtxfailedLoginStore *sync.Mutex = &sync.Mutex{}
 
 // NewUser saves a new user in the database
 //
@@ -91,4 +103,22 @@ func checkPass(password string, hashedPassword string, salt string) bool {
 func initAuthTable() error {
 	_, err := conf.db.Exec(qryCreateTable)
 	return err
+}
+
+func isBlockedUserIP(user string, remoteAddress string) bool {
+	key := user + strings.Split(remoteAddress, ":")[0]
+
+	userIpRegister, ok := failedLoginStore[key]
+	if !ok {
+		return false
+	}
+
+	if userIpRegister.exp < time.Now().Unix() {
+		mtxfailedLoginStore.Lock()
+		delete(failedLoginStore, key)
+		mtxfailedLoginStore.Unlock()
+		return false
+	}
+
+	return true
 }

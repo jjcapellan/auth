@@ -70,6 +70,10 @@ func CheckLogin(user string, password string) (bool, int) {
 	return checkPass(password, hashedPassword, salt), authLevel
 }
 
+// CheckLogin checks user password and returns result after [delay] seconds.
+// This is a help against brute force attacks.
+//
+// Returns (true, authLevel) if login is successful, else returns (false, 0).
 func CheckLoginDelayed(user string, password string, delay int) (bool, int) {
 	time.Sleep(time.Duration(delay) * time.Second)
 	passed, authLevel := CheckLogin(user, password)

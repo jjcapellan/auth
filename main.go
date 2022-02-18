@@ -5,9 +5,12 @@ import (
 )
 
 type config struct {
-	db     *sql.DB
-	secret string
+	db         *sql.DB
+	secret     string
+	maxAttemps int
 }
+
+const maxAttemps = 5
 
 var conf = &config{}
 
@@ -22,6 +25,7 @@ func Init(database *sql.DB, secretKey string, smtpConf SmtpConfig) error {
 
 	conf.db = database
 	conf.secret = secretKey
+	conf.maxAttemps = maxAttemps
 
 	if smtpConf.From != "" {
 		initSmtp(smtpConf)

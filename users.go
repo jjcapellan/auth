@@ -110,7 +110,7 @@ func addFailedLogin(user string, remoteAddress string) {
 
 	attemps := userIpRegister.attemps
 	expireTime := time.Now().Unix() + int64(60*30)
-	if attemps < 5 {
+	if attemps < conf.maxAttemps {
 		expireTime = 0
 	}
 	attemps++

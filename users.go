@@ -122,8 +122,8 @@ func initAuthTable() error {
 	return err
 }
 
-func isBlockedUserIP(user string, remoteAddress string) bool {
-	key := user + strings.Split(remoteAddress, ":")[0]
+func IsBlocked(user string, ip string) bool {
+	key := user + strings.Split(ip, ":")[0]
 
 	userIpRegister, ok := failedLoginStore[key]
 	if !ok {

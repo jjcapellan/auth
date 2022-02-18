@@ -41,10 +41,14 @@ func Init(database *sql.DB, secretKey string, smtpConf SmtpConfig) error {
 	return nil
 }
 
+// SetBanDuration sets the duration of ban to combination user-ip
+// for excessive login attemps.
 func SetBanDuration(minutes int) {
 	conf.banDuration = int64(minutes * 60)
 }
 
+// SetMaxAttemps sets the max number of login attemps before ban temporally
+// a combination user-ip.
 func SetMaxAttemps(attemps int) {
 	if attemps < 1 {
 		return

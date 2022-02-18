@@ -219,3 +219,13 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/nonmembersarea/", http.StatusSeeOther)
 }
 ```
+
+---  
+
+### **7. Delayed login**
+When two factor authentication is not used, delay the login some seconds can help against brute force attacks. There is a function for it:  
+**CheckLoginDelayed(user string, password string, delay int) (bool, int)**
+* *user*: user name.
+* *password*: plain text password provided by user.
+* *delay*: delay in seconds before return response.  
+Returns (true, authLevel) if login is successful, else returns (false, 0).  

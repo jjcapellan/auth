@@ -2,7 +2,15 @@
 ![GitHub license](https://img.shields.io/github/license/jjcapellan/auth.svg)  
 
 # JJ-AUTH
-Simple and minimal library to implement basic or two factor authentication and authorization system based on session cookies in golang.  
+Simple and minimal library to implement basic or two factor authentication and authorization system based on session cookies in golang. 
+
+## Features
+* Users management
+* Sessions control
+* Two factor authentication (login - email)
+* Authorization middleware
+* User access filter by authorization levels
+* Temporally bans for excessive loging attemps against one user from same ip.
 
 ## Table of contents
 * [Usage](#Usage)

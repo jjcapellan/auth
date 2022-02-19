@@ -23,6 +23,7 @@ Simple and minimal library to implement basic or two factor authentication and a
   * [6 Users logout](#6.-Users-logout)
   * [7 Delayed login](#7.-Delayed-login)
   * [8 Ban temporally excessive login attemps](#8.-Ban-temporally-excessive-login-attemps)
+* [License](#License)
 
 
 ## Usage
@@ -293,3 +294,6 @@ The default values for ban duration and max number of attemps can be changed usi
 * **SetBanDuration(minutes int)**
 * **SetMaxAttemps(attemps int)**
 
+
+## License
+This library is licensed under the terms of the [MIT open source license](LICENSE).

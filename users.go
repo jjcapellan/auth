@@ -27,6 +27,7 @@ func NewUser(user string, password string, email string, authLevel int) error {
 	return nil
 }
 
+// DeleteUser deletes user register from database.
 func DeleteUser(user string) error {
 	_, err := conf.db.Exec(qryDeleteUser, user)
 	if err != nil {
@@ -35,9 +36,10 @@ func DeleteUser(user string) error {
 	return nil
 }
 
-func UpdateUserPass(user string, password string) error {
+// UpdateUserPass updates user password
+func UpdateUserPass(user string, newPassword string) error {
 	salt := wordgen.New(8)
-	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password+salt+conf.secret), 10)
+	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(newPassword+salt+conf.secret), 10)
 	_, err := conf.db.Exec(qryUpdatePass, hashedPassword, salt, user)
 	if err != nil {
 		return fmt.Errorf("%s password couldnt be updated from database: %s", user, err.Error())
@@ -45,8 +47,9 @@ func UpdateUserPass(user string, password string) error {
 	return nil
 }
 
-func UpdateUserEmail(user string, email string) error {
-	_, err := conf.db.Exec(qryUpdateEmail, email, user)
+// UpdateUserEmail updates user email
+func UpdateUserEmail(user string, newEmail string) error {
+	_, err := conf.db.Exec(qryUpdateEmail, newEmail, user)
 	if err != nil {
 		return fmt.Errorf("%s email couldnt be updated from database: %s", user, err.Error())
 	}

@@ -45,6 +45,7 @@ func NewSession(user string, duration int, authLevel int, w http.ResponseWriter)
 	return nil
 }
 
+// Gets authorization level from a session token
 func GetUserAuthLevel(token string) int {
 	defer mtxSessionStore.Unlock()
 	mtxSessionStore.Lock()

@@ -32,7 +32,7 @@ func RegBadLogin(user string, remoteAddress string) {
 	mtxBadLoginStore.Lock()
 	obj, ok := badLoginStore[key]
 	if !ok {
-		badLoginStore[key] = userLogins{1, 0}
+		badLoginStore[key] = userLogins{0, 0}
 		mtxBadLoginStore.Unlock()
 		if badLoginCount > conf.cleanBadLoginsCycle {
 			badLoginCount = 0
@@ -41,13 +41,13 @@ func RegBadLogin(user string, remoteAddress string) {
 		return
 	}
 
-	attemps := obj.attemps
+	obj.attemps++
 	expireTime := time.Now().Unix() + conf.banDuration
-	if attemps < conf.maxAttemps {
+	if obj.attemps < conf.maxAttemps {
 		expireTime = 0
 	}
-	attemps++
-	badLoginStore[key] = userLogins{attemps, expireTime}
+
+	badLoginStore[key] = userLogins{obj.attemps, expireTime}
 	mtxBadLoginStore.Unlock()
 }
 
@@ -68,7 +68,7 @@ func IsBlocked(user string, remoteAddress string) bool {
 	}
 
 	if obj.exp < time.Now().Unix() {
-		if obj.attemps >= conf.maxAttemps {
+		if obj.attemps > conf.maxAttemps {
 			mtxBadLoginStore.Lock()
 			delete(badLoginStore, key)
 			mtxBadLoginStore.Unlock()

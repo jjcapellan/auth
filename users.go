@@ -36,6 +36,17 @@ func DeleteUser(user string) error {
 	return nil
 }
 
+// GetUsersCount gets the current number of users registered
+func GetUsersCount() (int, error) {
+	result := conf.db.QueryRow(qryGetUsersCount)
+	var count int
+	err := result.Scan(&count)
+	if err != nil {
+		return 0, fmt.Errorf("Users count error: %s", err.Error())
+	}
+	return count, nil
+}
+
 // UpdateUserPass updates user password
 func UpdateUserPass(user string, newPassword string) error {
 	salt := wordgen.New(8)

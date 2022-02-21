@@ -30,10 +30,23 @@ func TestMain(t *testing.T) {
 		t.Fatalf("Init error: %s", err.Error())
 	}
 
-	// Add user
+	// Add users
 	err = jjauth.NewUser("user1", "pass1", "email1@email.com", 1)
 	if err != nil {
 		t.Fatalf("NewUser error: %s", err)
+	}
+	err = jjauth.NewUser("user2", "pass2", "email2@email.com", 1)
+	if err != nil {
+		t.Fatalf("NewUser error: %s", err)
+	}
+
+	// Test GetUsersCount
+	count, err := jjauth.GetUsersCount()
+	if err != nil {
+		t.Fatalf("GetUsersCount error: %s", err.Error())
+	}
+	if count != 2 {
+		t.Fatalf("GetUsersCount -> expected: 2  got: %d", count)
 	}
 
 	// Test user1 cycle

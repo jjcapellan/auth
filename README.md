@@ -16,15 +16,15 @@ Generated docs: https://pkg.go.dev/github.com/jjcapellan/auth#section-documentat
 
 ## Table of contents
 * [Usage](#Usage)
-  * [1 Installation](#1.-Installation)
-  * [2 Initialization](#2.-Initialization)
-  * [3 User registration](#3.-User-registration)
-  * [4.1 Users simple login](#4.1-Users-simple-login)
-  * [4.2 Two factor authentication](#4.2-Two-factor-authentication-(2FA))
-  * [5 Users authorization](#5.-Users-authorization)
-  * [6 Users logout](#6.-Users-logout)
-  * [7 Delayed login](#7.-Delayed-login)
-  * [8 Ban temporally excessive login attemps](#8.-Ban-temporally-excessive-login-attemps)
+  * [1 Installation](#1-Installation)
+  * [2 Initialization](#2-Initialization)
+  * [3 User registration](#3-User-registration)
+  * [4.1 Users simple login](#41-Users-simple-login)
+  * [4.2 Two factor authentication](#42-Two-factor-authentication-(2FA))
+  * [5 Users authorization](#5-Users-authorization)
+  * [6 Users logout](#6-Users-logout)
+  * [7 Delayed login](#7-Delayed-login)
+  * [8 Ban temporally excessive login attemps](#8-Ban-temporally-excessive-login-attemps)
 * [License](#License)
 
 
